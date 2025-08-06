@@ -53,26 +53,46 @@ export function TokenVisualization({
           <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
             <h4 className="font-medium mb-2 flex items-center space-x-2">
               <Info className="h-4 w-4" />
-              <span>How Tokenization Works (Step-by-step)</span>
+              <span>The Fundamental Question: Are Tokens Equal to Words?</span>
             </h4>
-            <div className="text-sm space-y-2">
-              <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center">
-                  1
-                </div>
-                <span>Text is split into meaningful units (words, subwords, or characters)</span>
+            <div className="text-sm space-y-3">
+              <div className="p-3 bg-white dark:bg-gray-800 rounded border-l-4 border-yellow-500">
+                <strong>The Short Answer:</strong> Tokens are NOT words. They are the fundamental atomic units that language models use to process text, representing words, parts of words, punctuation, or special symbols.
               </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center">
-                  2
+              
+              <div className="space-y-2">
+                <div className="flex items-start space-x-2">
+                  <div className="w-6 h-6 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">1</div>
+                  <div>
+                    <strong>Whole Words:</strong> Common words get their own tokens
+                    <div className="text-xs text-gray-600 mt-1 font-mono">"the" → Token ID: 464</div>
+                  </div>
                 </div>
-                <span>Each token gets a unique ID from the model's vocabulary</span>
+                <div className="flex items-start space-x-2">
+                  <div className="w-6 h-6 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">2</div>
+                  <div>
+                    <strong>Subwords:</strong> Complex words are broken into pieces
+                    <div className="text-xs text-gray-600 mt-1 font-mono">"unhappiness" → ["un", "happy", "ness"]</div>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <div className="w-6 h-6 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">3</div>
+                  <div>
+                    <strong>Byte Pair Encoding (BPE):</strong> Algorithm merges frequent character pairs
+                    <div className="text-xs text-gray-600 mt-1">Most frequent pair "th" → single token</div>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <div className="w-6 h-6 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">4</div>
+                  <div>
+                    <strong>Special Tokens:</strong> Control symbols for model operation
+                    <div className="text-xs text-gray-600 mt-1 font-mono">&lt;pad&gt;, &lt;unk&gt;, &lt;s&gt;, &lt;/s&gt;</div>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center">
-                  3
-                </div>
-                <span>Tokens are converted to numerical vectors for processing</span>
+
+              <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded">
+                <strong>Why This Matters:</strong> Tokenization affects model performance, handling of rare words, multilingual capability, and computational efficiency. Modern models like GPT-4 use ~100,000 tokens in their vocabulary.
               </div>
             </div>
           </div>
@@ -143,33 +163,59 @@ export function TokenVisualization({
                     <div className="space-y-3">
                       <div className="flex items-center space-x-3">
                         <div className="w-6 h-6 rounded-full" style={{ backgroundColor: token.color }} />
-                        <h4 className="font-semibold text-lg">Token Analysis: "{token.text}"</h4>
+                        <h4 className="font-semibold text-lg">Token Deep Dive: "{token.text}"</h4>
                       </div>
 
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="text-center p-3 bg-white dark:bg-gray-700 rounded">
                           <div className="text-sm text-gray-600 dark:text-gray-300">Token ID</div>
                           <div className="font-bold text-lg">{token.id}</div>
+                          <div className="text-xs text-gray-500">Vocabulary Index</div>
                         </div>
                         <div className="text-center p-3 bg-white dark:bg-gray-700 rounded">
                           <div className="text-sm text-gray-600 dark:text-gray-300">POS Tag</div>
                           <div className="font-bold text-lg">{token.pos_tag}</div>
+                          <div className="text-xs text-gray-500">Grammar Role</div>
                         </div>
                         <div className="text-center p-3 bg-white dark:bg-gray-700 rounded">
                           <div className="text-sm text-gray-600 dark:text-gray-300">Frequency</div>
                           <div className="font-bold text-lg">{(token.frequency * 100).toFixed(1)}%</div>
+                          <div className="text-xs text-gray-500">Training Corpus</div>
                         </div>
                         <div className="text-center p-3 bg-white dark:bg-gray-700 rounded">
                           <div className="text-sm text-gray-600 dark:text-gray-300">Sentiment</div>
                           <div className="font-bold text-lg">
                             {token.sentiment > 0 ? "😊" : token.sentiment < 0 ? "😔" : "😐"}
                           </div>
+                          <div className="text-xs text-gray-500">Emotional Valence</div>
                         </div>
                       </div>
 
-                      <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded">
-                        <div className="text-sm font-medium mb-1">Explanation:</div>
-                        <div className="text-sm text-gray-700 dark:text-gray-300">{token.explanation}</div>
+                      <div className="space-y-3">
+                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded">
+                          <div className="text-sm font-medium mb-1">Tokenization Analysis:</div>
+                          <div className="text-sm text-gray-700 dark:text-gray-300">{token.explanation}</div>
+                        </div>
+
+                        <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded">
+                          <div className="text-sm font-medium mb-2">BPE Process for "{token.text}":</div>
+                          <div className="text-xs space-y-1">
+                            <div>1. Character-level: {token.text.split('').map(c => `"${c}"`).join(', ')}</div>
+                            <div>2. Frequency analysis across training corpus</div>
+                            <div>3. Merge most frequent character pairs</div>
+                            <div>4. Result: Single token with ID {token.id}</div>
+                          </div>
+                        </div>
+
+                        <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded">
+                          <div className="text-sm font-medium mb-2">Vocabulary Insights:</div>
+                          <div className="text-xs space-y-1">
+                            <div>• Modern LLMs use 50K-100K+ token vocabularies</div>
+                            <div>• This token represents {((token.frequency) * 100).toFixed(3)}% of training data</div>
+                            <div>• Subword tokenization enables handling of rare/new words</div>
+                            <div>• GPT-4 uses ~100,000 tokens for optimal efficiency</div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ) : null

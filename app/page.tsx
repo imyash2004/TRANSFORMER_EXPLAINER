@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   ChevronRight,
   ChevronLeft,
@@ -30,14 +31,28 @@ import {
 
 // Import our modular components
 import { TokenVisualization } from "@/components/TokenVisualization"
-import { EmbeddingVisualization } from "@/components/EmbeddingVisualization"
+import EmbeddingVisualization from "@/components/EmbeddingVisualization"
 import { AttentionVisualization } from "@/components/AttentionVisualization"
+import { LLMProcessFlow } from "@/components/LLMProcessFlow"
+import { EducationalDocs } from "@/components/EducationalDocs"
+import LLMResponseGenerator from "@/components/LLMResponseGenerator"
 import { analyzeText, type AnalysisResult } from "@/lib/textAnalyzer"
 
 // Enhanced examples with more variety for beginners
 const ENHANCED_EXAMPLES = [
   {
     id: 1,
+    text: "once upon a time in a magical forest",
+    category: "Storytelling",
+    icon: "🌲",
+    gradient: "from-emerald-400 to-emerald-600",
+    description: "Classic story beginning that triggers narrative mode",
+    difficulty: "Beginner",
+    explanation:
+      "This storytelling prompt uses the classic 'once upon a time' opening to signal narrative mode. The AI recognizes this pattern and prepares to generate a story with characters, setting, and plot development in a magical/fantasy context.",
+  },
+  {
+    id: 2,
     text: "write a poem on winter",
     category: "Creative Writing",
     icon: "❄️",
@@ -48,7 +63,7 @@ const ENHANCED_EXAMPLES = [
       "This is a creative writing task. The AI needs to understand 'write' as an instruction, 'poem' as the format, and 'winter' as the theme. It will use its knowledge of poetry structure and winter imagery to create original content.",
   },
   {
-    id: 2,
+    id: 3,
     text: "what is the capital of France",
     category: "Factual Question",
     icon: "🗼",
@@ -59,7 +74,7 @@ const ENHANCED_EXAMPLES = [
       "This is a straightforward factual question. The AI recognizes 'what is' as a question pattern, 'capital' as a geographic concept, and 'France' as a country. It retrieves the stored fact that Paris is France's capital.",
   },
   {
-    id: 3,
+    id: 4,
     text: "explain machine learning to a 5 year old",
     category: "Educational",
     icon: "🧠",
@@ -70,7 +85,7 @@ const ENHANCED_EXAMPLES = [
       "This requires the AI to understand multiple concepts: 'explain' (instruction), 'machine learning' (complex topic), and 'to a 5 year old' (audience specification). It must simplify technical concepts using analogies and simple language.",
   },
   {
-    id: 4,
+    id: 5,
     text: "translate hello world to Spanish",
     category: "Translation",
     icon: "🌍",
@@ -81,7 +96,7 @@ const ENHANCED_EXAMPLES = [
       "Translation task where the AI identifies 'translate' as the action, 'hello world' as the source text, and 'Spanish' as the target language. It uses its multilingual training to provide the equivalent phrase.",
   },
   {
-    id: 5,
+    id: 6,
     text: "compare and contrast cats and dogs as pets",
     category: "Analysis",
     icon: "🐱",
@@ -90,17 +105,6 @@ const ENHANCED_EXAMPLES = [
     difficulty: "Advanced",
     explanation:
       "This complex task requires the AI to understand 'compare and contrast' as an analytical framework, identify 'cats and dogs' as subjects, and 'as pets' as the context. It must organize information into similarities and differences.",
-  },
-  {
-    id: 6,
-    text: "once upon a time in a magical forest",
-    category: "Storytelling",
-    icon: "🌲",
-    gradient: "from-emerald-400 to-emerald-600",
-    description: "Story beginning that triggers narrative generation",
-    difficulty: "Intermediate",
-    explanation:
-      "This storytelling prompt uses the classic 'once upon a time' opening to signal narrative mode. The AI recognizes this pattern and prepares to generate a story with characters, setting, and plot development.",
   },
 ]
 
@@ -115,7 +119,7 @@ export default function ComprehensiveLLMWorkshop() {
   const [currentStep, setCurrentStep] = useState(0)
   const [showMath, setShowMath] = useState(false)
 
-  const progress = (currentModule / 6) * 100
+  const progress = (currentModule / 7) * 100
 
   // Auto-play functionality
   useEffect(() => {
@@ -151,8 +155,9 @@ export default function ComprehensiveLLMWorkshop() {
     { id: 2, name: "Tokenization", icon: Zap, description: "Break text into tokens" },
     { id: 3, name: "Embeddings 3D", icon: Brain, description: "Visualize semantic space" },
     { id: 4, name: "Attention", icon: Network, description: "Multi-head attention mechanism" },
-    { id: 5, name: "Generation", icon: Target, description: "Token prediction and sampling" },
-    { id: 6, name: "Limitations", icon: AlertTriangle, description: "Understanding model limitations" },
+    { id: 5, name: "Process Flow", icon: Target, description: "Complete LLM pipeline walkthrough" },
+    { id: 6, name: "Documentation", icon: Calculator, description: "Comprehensive educational guide" },
+    { id: 7, name: "Limitations", icon: AlertTriangle, description: "Understanding model limitations" },
   ]
 
   const renderModuleContent = () => {
@@ -354,27 +359,47 @@ export default function ComprehensiveLLMWorkshop() {
           <div className="space-y-8">
             <div className="text-center">
               <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
-                3D Embedding Space
+                3D Embedding Space & Response Generation
               </h2>
               <p className="text-xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto">
-                Explore how tokens are positioned in high-dimensional space based on their semantic meaning. Words with
-                similar meanings cluster together in this mathematical space.
+                Explore how tokens are positioned in high-dimensional space AND see the complete process of how ChatGPT 
+                generates responses from your input text. Watch the magic happen step by step!
               </p>
             </div>
 
-            {analysisResult && (
-              <EmbeddingVisualization
-                tokens={analysisResult.tokens}
-                selectedToken={selectedToken}
-                onTokenSelect={setSelectedToken}
-              />
-            )}
+            <Tabs defaultValue="response" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="response">🤖 Response Generation</TabsTrigger>
+                <TabsTrigger value="embeddings">🧠 3D Embedding Space</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="response" className="space-y-6">
+                <div className="text-center mb-6">
+                  <h3 className="text-2xl font-semibold mb-2">How ChatGPT Thinks and Responds</h3>
+                  <p className="text-gray-600 dark:text-gray-300">
+                    Watch the complete internal process from "Once upon a time" to a full story response
+                  </p>
+                </div>
+                <LLMResponseGenerator />
+              </TabsContent>
+              
+              <TabsContent value="embeddings" className="space-y-6">
+                <div className="text-center mb-6">
+                  <h3 className="text-2xl font-semibold mb-2">3D Semantic Relationships</h3>
+                  <p className="text-gray-600 dark:text-gray-300">
+                    See how words are positioned in mathematical space based on their meaning
+                  </p>
+                </div>
+                <EmbeddingVisualization />
+              </TabsContent>
+            </Tabs>
 
             {!analysisResult && (
               <Alert>
                 <Info className="h-4 w-4" />
                 <AlertDescription>
-                  Please select an example or enter custom text in Module 1 to see the embedding visualization.
+                  The demos above show how ChatGPT processes the example "Once upon a time in a magical forest". 
+                  You can also select an example or enter custom text in Module 1 to see how your own input would be processed.
                 </AlertDescription>
               </Alert>
             )}
@@ -418,32 +443,40 @@ export default function ComprehensiveLLMWorkshop() {
           <div className="space-y-8">
             <div className="text-center">
               <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
-                Token Generation Process
+                Complete LLM Processing Pipeline
               </h2>
               <p className="text-xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto">
-                See how the model predicts the next token based on probability distributions and sampling parameters.
-                This is where the magic of text generation happens!
+                Follow your text through every stage of processing: from input to tokenization, embeddings, attention, 
+                layer-by-layer transformations, and final prediction. See the complete journey from text to intelligence.
               </p>
             </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Coming Soon: Generation Visualization</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <Target className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                  <p className="text-gray-600 dark:text-gray-300">
-                    Interactive generation visualization with probability distributions, temperature controls, and
-                    real-time sampling will be available here.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <LLMProcessFlow currentText={
+              selectedExample > 0 
+                ? ENHANCED_EXAMPLES.find(e => e.id === selectedExample)?.text || "The weather is"
+                : customInput || "The weather is"
+            } />
           </div>
         )
 
       case 6:
+        return (
+          <div className="space-y-8">
+            <div className="text-center">
+              <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
+                Comprehensive Educational Documentation
+              </h2>
+              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto">
+                Deep dive into the theoretical foundations, mathematical details, and real-world applications of 
+                transformer architecture. From beginner concepts to advanced implementation details.
+              </p>
+            </div>
+
+            <EducationalDocs activeSection="tokens" />
+          </div>
+        )
+
+      case 7:
         return (
           <div className="space-y-8">
             <div className="text-center">
@@ -566,7 +599,7 @@ export default function ComprehensiveLLMWorkshop() {
               <div className="mt-6 pt-6 border-t">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium">Progress</span>
-                  <span className="text-sm text-gray-500">{currentModule}/6</span>
+                  <span className="text-sm text-gray-500">{currentModule}/7</span>
                 </div>
                 <div className="flex space-x-1">
                   {MODULES.map((_, index) => (
@@ -634,7 +667,7 @@ export default function ComprehensiveLLMWorkshop() {
               </Button>
 
               <div className="flex items-center space-x-4">
-                <div className="text-sm text-gray-500">Module {currentModule} of 6</div>
+                <div className="text-sm text-gray-500">Module {currentModule} of 7</div>
                 <div className="flex space-x-1">
                   {MODULES.map((_, index) => (
                     <button
@@ -653,8 +686,8 @@ export default function ComprehensiveLLMWorkshop() {
               </div>
 
               <Button
-                onClick={() => setCurrentModule(Math.min(6, currentModule + 1))}
-                disabled={currentModule === 6}
+                onClick={() => setCurrentModule(Math.min(7, currentModule + 1))}
+                disabled={currentModule === 7}
                 className="flex items-center space-x-2"
               >
                 <span>Next Module</span>

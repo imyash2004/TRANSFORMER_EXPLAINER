@@ -220,10 +220,14 @@ export function AttentionVisualization({ tokens, selectedToken, onTokenSelect }:
             <div className="flex items-start space-x-2">
               <Info className="h-4 w-4 mt-0.5 text-blue-600" />
               <div>
-                <div className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                  Head {selectedHead + 1} Focus:
+                <div className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">
+                  Head {selectedHead + 1} Focus: {headExplanations[selectedHead]}
                 </div>
-                <div className="text-sm text-blue-700 dark:text-blue-300">{headExplanations[selectedHead]}</div>
+                <div className="text-xs space-y-1 text-blue-700 dark:text-blue-300">
+                  <div><strong>QKV Process:</strong> Each token creates Query (what it seeks), Key (what it offers), Value (actual content)</div>
+                  <div><strong>Attention Weight:</strong> Query·Key similarity determines how much each token influences others</div>
+                  <div><strong>Output:</strong> Weighted combination of Values based on attention scores</div>
+                </div>
               </div>
             </div>
           </div>
@@ -280,34 +284,63 @@ export function AttentionVisualization({ tokens, selectedToken, onTokenSelect }:
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h4 className="font-medium mb-2">Attention Formula:</h4>
-                <div className="bg-gray-100 dark:bg-gray-700 p-3 rounded font-mono text-sm">
-                  Attention(Q,K,V) = softmax(QK^T/√d_k)V
+                <h4 className="font-medium mb-2">The QKV Mechanism: Library Search Analogy</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded">
+                    <h5 className="font-medium text-green-800 dark:text-green-200">Query (Q)</h5>
+                    <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+                      "What information do I need?" - Each token asks for specific types of information from other tokens.
+                    </p>
+                  </div>
+                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded">
+                    <h5 className="font-medium text-blue-800 dark:text-blue-200">Key (K)</h5>
+                    <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                      "What information do I have?" - Each token advertises what kind of information it contains.
+                    </p>
+                  </div>
+                  <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded">
+                    <h5 className="font-medium text-purple-800 dark:text-purple-200">Value (V)</h5>
+                    <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">
+                      "The actual content" - The information that gets shared when attention is high.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded">
+                  <h5 className="font-medium mb-2">Attention Formula Breakdown:</h5>
+                  <div className="bg-gray-100 dark:bg-gray-700 p-3 rounded font-mono text-sm mb-2">
+                    Attention(Q,K,V) = softmax(QK^T/√d_k)V
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div><strong>1. QK^T:</strong> Calculate similarity between all Query-Key pairs</div>
+                    <div><strong>2. /√d_k:</strong> Scale by √64 to prevent vanishing gradients</div>
+                    <div><strong>3. softmax():</strong> Convert to probabilities (attention weights)</div>
+                    <div><strong>4. ×V:</strong> Weight and combine Value vectors</div>
+                  </div>
                 </div>
               </div>
 
               <div className="space-y-2">
                 <div>
-                  <strong>Q</strong> = Query matrix
+                  <strong>Q, K, V Dimensions:</strong> Each has shape [seq_len, d_k] where d_k = 64
                 </div>
                 <div>
-                  <strong>K</strong> = Key matrix
+                  <strong>Multi-Head:</strong> 12 heads × 64 dims = 768 total dimensions
                 </div>
                 <div>
-                  <strong>V</strong> = Value matrix
-                </div>
-                <div>
-                  <strong>d_k</strong> = Key dimension (64)
+                  <strong>Learned Projections:</strong> W_q, W_k, W_v matrices transform embeddings to QKV
                 </div>
               </div>
 
               <div>
-                <h4 className="font-medium mb-2">Step-by-step:</h4>
+                <h4 className="font-medium mb-2">Step-by-step Process:</h4>
                 <div className="text-sm space-y-1">
-                  <div>1. Compute Q·K^T (dot products)</div>
-                  <div>2. Scale by √d_k</div>
-                  <div>3. Apply softmax</div>
-                  <div>4. Multiply by V</div>
+                  <div>1. <strong>Create QKV:</strong> Linear projections from input embeddings</div>
+                  <div>2. <strong>Compute Scores:</strong> Q·K^T for all token pairs</div>
+                  <div>3. <strong>Scale & Softmax:</strong> Normalize to attention probabilities</div>
+                  <div>4. <strong>Apply to Values:</strong> Weighted combination of V vectors</div>
+                  <div>5. <strong>Concatenate Heads:</strong> Combine all 12 attention heads</div>
+                  <div>6. <strong>Final Projection:</strong> W_o matrix produces output</div>
                 </div>
               </div>
             </CardContent>
@@ -328,6 +361,7 @@ export function AttentionVisualization({ tokens, selectedToken, onTokenSelect }:
                     <div className="font-medium flex items-center space-x-2">
                       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: tokens[hoveredCell.i]?.color }} />
                       <span>"{tokens[hoveredCell.i]?.text}"</span>
+                      <span className="text-xs text-gray-500">({tokens[hoveredCell.i]?.semantic_role})</span>
                     </div>
                   </div>
 
@@ -336,20 +370,43 @@ export function AttentionVisualization({ tokens, selectedToken, onTokenSelect }:
                     <div className="font-medium flex items-center space-x-2">
                       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: tokens[hoveredCell.j]?.color }} />
                       <span>"{tokens[hoveredCell.j]?.text}"</span>
+                      <span className="text-xs text-gray-500">({tokens[hoveredCell.j]?.semantic_role})</span>
                     </div>
                   </div>
 
                   <div>
                     <div className="text-sm text-gray-600 dark:text-gray-300">Attention Weight:</div>
                     <div className="font-bold text-lg">{(hoveredCell.weight * 100).toFixed(1)}%</div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-blue-600 h-2 rounded-full" 
+                        style={{ width: `${hoveredCell.weight * 100}%` }}
+                      ></div>
+                    </div>
                   </div>
 
-                  <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded text-sm">
-                    {hoveredCell.weight > 0.7
-                      ? "🔥 Strong attention - this token is very important for understanding the other"
-                      : hoveredCell.weight > 0.4
-                        ? "👀 Moderate attention - some relationship exists"
-                        : "💭 Weak attention - minimal direct relationship"}
+                  <div className="space-y-2">
+                    <div className="p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded text-xs">
+                      <strong>QKV Interpretation:</strong><br/>
+                      Query from "{tokens[hoveredCell.i]?.text}": "I need {tokens[hoveredCell.i]?.semantic_role} information"<br/>
+                      Key from "{tokens[hoveredCell.j]?.text}": "I offer {tokens[hoveredCell.j]?.semantic_role} information"<br/>
+                      Match score: {(hoveredCell.weight * 100).toFixed(1)}%
+                    </div>
+                    
+                    <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded text-sm">
+                      {hoveredCell.weight > 0.7
+                        ? "🔥 Strong attention - this token is very important for understanding the other"
+                        : hoveredCell.weight > 0.4
+                          ? "👀 Moderate attention - some relationship exists"
+                          : "💭 Weak attention - minimal direct relationship"}
+                    </div>
+                  </div>
+
+                  <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded text-xs">
+                    <div className="font-medium mb-1">Mathematical Details:</div>
+                    <div>Score = Q[{hoveredCell.i}] · K[{hoveredCell.j}] / √64</div>
+                    <div>Weight = softmax(score) = {(hoveredCell.weight * 100).toFixed(1)}%</div>
+                    <div>Contribution to output: {(hoveredCell.weight * 100).toFixed(1)}% × V[{hoveredCell.j}]</div>
                   </div>
                 </div>
               </CardContent>
